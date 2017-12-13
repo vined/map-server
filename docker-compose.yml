@@ -1,0 +1,25 @@
+version: '3'
+services:
+  node:
+    image: "node:9"
+    user: "node"
+    working_dir: /home/node/app
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./app:/home/node/app
+    ports:
+      - "8081:8081"
+    command: "npm start"
+  db:
+    image: "mdillon/postgis"
+    environment:
+      POSTGRES_USER: mapserver
+      POSTGRES_PASSWORD: mapserver
+    volumes:
+      - ./data:/var/lib/postgresql/data
+  wfs:
+    image: "camptocamp/mapserver"
+    volumes:
+      - ./maps:/etc/mapserver/
+

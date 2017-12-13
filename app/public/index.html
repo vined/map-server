@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image ArcGIS MapServer</title>
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css"
+          integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://openlayers.org/en/v4.6.4/css/ol.css" type="text/css">
+    <script src="https://openlayers.org/en/v4.6.4/build/ol.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Test OpenLayers</h2>
+
+
+<div id="map" class="map"></div>
+<script>
+    let url = 'https://sampleserver1.arcgisonline.com/ArcGIS/rest/services/' +
+        'Specialty/ESRI_StateCityHighway_USA/MapServer';
+
+    let layers = [
+        new ol.layer.Tile({
+            source: new ol.source.OSM()
+        }),
+        new ol.layer.Image({
+            source: new ol.source.ImageArcGISRest({
+                ratio: 1,
+                params: {},
+                url: url
+            })
+        })
+    ];
+    let map = new ol.Map({
+        layers: layers,
+        target: 'map',
+        view: new ol.View({
+            center: [-10997148, 4569099],
+            zoom: 4
+        })
+    });
+</script>
+</body>
+</html>
