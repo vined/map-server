@@ -6,6 +6,7 @@
           integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w" crossorigin="anonymous">
     <link rel="stylesheet" href="https://openlayers.org/en/v4.6.4/css/ol.css" type="text/css">
     <script src="https://openlayers.org/en/v4.6.4/build/ol.js"></script>
+    <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body {
@@ -19,30 +20,97 @@
 
 
 <div id="map" class="map"></div>
+
+<label for="from">Nuo</label>
+<input id="from" name="from">
+
+<label for="to">Iki</label>
+<input id="to" name="to">
+<button onclick="updateLayers()">Update</button>
+
 <script>
-    let url = 'https://sampleserver1.arcgisonline.com/ArcGIS/rest/services/' +
-        'Specialty/ESRI_StateCityHighway_USA/MapServer';
+
+    let airportNoiseUrl = '/airport-noise';
+    let geoJsonFormat = new ol.format.GeoJSON();
+
+    function getStyles(level) {
+        console.log(level);
+        switch (level) {
+            case '35-39':
+                return new ol.style.Style({
+                    fill: new ol.style.Fill({
+                        color: 'blue'
+                    })
+                });
+
+            case '35-39':
+                return new ol.style.Style({
+                    fill: new ol.style.Fill({
+                        color: 'blue'
+                    })
+                });
+            default:
+                return new ol.style.Style({
+                    stroke: new ol.style.Stroke({
+                        color: 'yellow',
+                        width: 1
+                    }),
+                    fill: new ol.style.Fill({
+                        color: 'rgba(255, 255, 0, 0.4)'
+                    })
+                });
+        }
+    }
+
+    let vectorSource = new ol.source.Vector({
+        loader: updateLayers,
+    });
+
+    let vectorLayer = new ol.layer.Vector({
+        source: vectorSource,
+        // style: function (feature) {
+        //     return getStyles(feature.level);
+        // },
+    });
 
     let layers = [
         new ol.layer.Tile({
             source: new ol.source.OSM()
         }),
-        new ol.layer.Image({
-            source: new ol.source.ImageArcGISRest({
-                ratio: 1,
-                params: {},
-                url: url
-            })
-        })
+        vectorLayer
     ];
+
+    let ltProjection = new ol.proj.Projection({name: 'EPSG:3346'});
+
     let map = new ol.Map({
         layers: layers,
         target: 'map',
         view: new ol.View({
-            center: [-10997148, 4569099],
-            zoom: 4
+            center: ol.proj.transform([582841, 6055545], 'EPSG:4326', ltProjection),
+            zoom: 12,
         })
     });
+
+    console.log(map)
+    function updateLayers() {
+        let fr = document.getElementById("from"),
+            to = document.getElementById("to");
+
+        if (fr.value && to.value && parseInt(fr.value) > parseInt(to.value)) {
+            fr.value = to.value;
+        }
+
+        vectorSource.clear();
+
+        $.ajax({
+            url: airportNoiseUrl + '?fr=' + fr.value + '&to=' + to.value,
+            method: 'GET',
+            success: function (response) {
+                let features = geoJsonFormat.readFeatures(response);
+                vectorSource.addFeatures(features);
+            }
+        })
+    }
 </script>
 </body>
 </html>
